@@ -35,10 +35,10 @@ plotBxp_peaktime <- function(dat, exportPath){
   
   exportPlot <- ggplot(dat, aes(x = season, y = peak_time)) +
     geom_violin() + 
-    geom_hline(yintercept = interventionTimes, colour = "black") +
+    geom_hline(yintercept = interventionTimes, colour = "black", linetype = 2) +
     scale_y_continuous("weeks to peak") +
     theme_bw() +
-    theme(text=element_text(size=12), axis.title.x = element_blank(), legend.position = "bottom", legend.title = element_blank())
+    theme(text=element_text(size=14), axis.title.x = element_blank(), legend.position = "bottom", legend.title = element_blank())
   ggsave(exportFilename, exportPlot, units = "in", width = w, height = h, dpi = dp)
   
   return(exportPlot)
@@ -60,5 +60,5 @@ setwd("./graph_outputs")
 pathname <- getwd()
 
 bdaPlt <- plotBxp_peaktime(pltDat, pathname)
-# exported 8/13/16
+# exported 8/25/16
 
