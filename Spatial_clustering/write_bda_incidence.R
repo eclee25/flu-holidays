@@ -24,13 +24,19 @@ setwd('../../SDI_Data/dz_burden/R_export')
 
 ilic_df <- read_csv('ilicByallZip3_allWeekly_totServ_totAge.csv', col_types = list(zip3 = col_character(), ili = col_integer(), pop = col_integer(), cov_z.y = col_double(), alpha_z.y = col_double(), ILIc = col_double(), cov_below5 = col_logical()))
 
+setwd("../SQL_export")
+viz_df <- read_csv('ILIViz_allWeekly_totServ_totAge_allZip.csv', col_types = "Dc_i") %>%
+  rename(visits = ANY_DIAG_VISIT_CT, zip3 = patient_zip3, week = WEEK)
+
+full_df <- full_join(ilic_df, viz_df, by = c("week", "zip3"))
+
 #### data cleaning ####################################
 # 10/27/15 remove zip3s with missing pop data in incl.lm indicator
 # 7/18/16 incl.lm is redundant with changes in write_ILIc_data.R (incl.lm is already defined as FALSE when is.na(pop)), 100,000 pop multiplier
-ilic_df2 <- ilic_df %>% 
+ilic_df2 <- full_df %>% 
   mutate(incl.lm = ifelse(!incl.lm, FALSE, ifelse(is.na(pop), FALSE, TRUE))) %>% 
   select(-ILIc, -cov_below5, -flu.week, -fit.week) %>%
-  mutate(ILIn = ili/pop*10000)
+  mutate(ILIn = ili/pop*10000, IR = (ili/visits)*(pop/100000))
 
 # add indicators for before, during, and after weeks relative to Christmas (-3, 0, +3 --> 2 week average)
 interestWeeks_newDef <- ilic_df2 %>%
@@ -61,12 +67,12 @@ interestWeeks_oldDef <- ilic_df2 %>%
 exportDat <- left_join(ilic_df2, interestWeeks_newDef, by = "week") %>%
   mutate(season = ifelse(month >= 10, year+1-2000, year-2000)) %>%
   filter(!is.na(bdaIndicator)) %>%
-  select(week, season, zip3, ili, pop, ILIn, bdaIndicator)
+  select(week, season, zip3, ili, pop, ILIn, IR, bdaIndicator)
   
 exportDat2 <- left_join(ilic_df2, interestWeeks_oldDef, by = "week") %>%
   mutate(season = ifelse(month >= 10, year+1-2000, year-2000)) %>%
   filter(!is.na(bdaIndicator)) %>%
-  select(week, season, zip3, ili, pop, ILIn, bdaIndicator)
+  select(week, season, zip3, ili, pop, ILIn, IR, bdaIndicator)
 
 #### export data ####################################
 # write new dataframe for bda spatial synchrony figs
@@ -74,7 +80,7 @@ setwd(dirname(sys.frame(1)$ofile))
 setwd("./import_data")
 write_csv(exportDat, "ILIn_bdaIndicator_incidence.csv")
 write_csv(exportDat2, "ILIn_bdaIndicator_moransI.csv")
-# exported 8/12/16
+# exported 8/25/16
 
 
 
