@@ -20,6 +20,9 @@ require(ggplot2)
 require(RColorBrewer)
 setwd(dirname(sys.frame(1)$ofile))
 
+#### set these! #################################
+code <- "_shifted" # ""
+
 #### plotting parameters #################################
 w <- 6; h <- 4; dp <- 300
 
@@ -29,7 +32,7 @@ plotBxp_bdaIncidence <- function(dat, varname, varString, defString, exportPath,
   print(match.call())
   # plot incidence before/during/after (grouped), distribution across peak time in average of all zip3s
   
-  exportFilename <- paste0(exportPath, sprintf("/bdaIncidence_bySeason_%s.png", defString))
+  exportFilename <- paste0(exportPath, sprintf("/bdaIncidence_bySeason_%s%s.png", defString, code))
   dat2 <- dat %>% rename_(interestVar = varname)
   
   exportPlot <- ggplot(dat2, aes(x = season, y = interestVar)) +
@@ -44,7 +47,7 @@ plotBxp_bdaIncidence <- function(dat, varname, varString, defString, exportPath,
 
 #### clean new bda definition data ####################################
 setwd("./import_data")
-importDat <- read_csv("ILIn_bdaIndicator_incidence.csv", col_types = "Diciiddc")
+importDat <- read_csv(sprintf("ILIn_bdaIndicator_incidence%s.csv", code), col_types = "Diciiddc")
 
 # bda - average of 2 week periods starting -3, 0, +3 weeks relative to Xmas
 newDef <- importDat %>%
@@ -62,21 +65,37 @@ newDef %>% group_by(season) %>% summarise(nas = sum(is.na(ILI)), nas_IR = sum(is
 newDef2 <- newDef %>%
   filter(!is.na(ILI))
 
-#### clean old bda definition data ####################################
-# bda - one week period that is -2, 0, +2 weeks relative to Xmas
-importDat2 <- read_csv("ILIn_bdaIndicator_moransI.csv", col_types = "Diciiddc")
+# # 8/29/16 ANOVA for bda comparisons
+# aovDat <- newDef2 %>%
+#   select(-ILI) %>%
+#   spread(period, IR)
+# seaslist <- aovDat %>% distinct(season) %>% unlist
+# for(i in 1:length(seaslist)){
+#   dummyDat <- aovDat %>% filter(season == seaslist[i])
+#   mod <- lm(during ~ before + after, data = dummyDat)
+#   print(paste("Season", seaslist[i]))
+#   print(summary.lm(mod))
+# }
 
-oldDef <- importDat2 %>%
-  filter(season != 1 & season != 10) %>%
-  rename(period = bdaIndicator) %>%
-  mutate(period = factor(period, levels = c("b", "d", "a"), labels = c("before", "during", "after"))) %>%
-  mutate(season = factor(as.character(season), levels = c("2", "3", "4", "5", "6", "7", "8", "9"), labels = c("2001-02", "2002-03", "2003-04", "2004-05", "2005-06", "2006-07", "2007-08", "2008-09")))
 
-# 152-156 ILIn NAs per season; 450 to 850 IR NAs per season
-oldDef %>% group_by(season) %>% summarise(nas = sum(is.na(ILIn), nas_IR = sum(is.na(IR))))
+if (code == ""){
+  #### clean old bda definition data ####################################
+  # bda - one week period that is -2, 0, +2 weeks relative to Xmas
+  importDat2 <- read_csv("ILIn_bdaIndicator_moransI.csv", col_types = "Diciiddc")
+  
+  oldDef <- importDat2 %>%
+    filter(season != 1 & season != 10) %>%
+    rename(period = bdaIndicator) %>%
+    mutate(period = factor(period, levels = c("b", "d", "a"), labels = c("before", "during", "after"))) %>%
+    mutate(season = factor(as.character(season), levels = c("2", "3", "4", "5", "6", "7", "8", "9"), labels = c("2001-02", "2002-03", "2003-04", "2004-05", "2005-06", "2006-07", "2007-08", "2008-09")))
+  
+  # 152-156 ILIn NAs per season; 450 to 850 IR NAs per season
+  oldDef %>% group_by(season) %>% summarise(nas = sum(is.na(ILIn), nas_IR = sum(is.na(IR))))
+  
+  oldDef2 <- oldDef %>%
+    filter(!is.na(ILIn))
+}
 
-oldDef2 <- oldDef %>%
-  filter(!is.na(ILIn))
 
 
 #### program ####################################
@@ -85,9 +104,12 @@ setwd(dirname(sys.frame(1)$ofile))
 setwd("./graph_outputs")
 pathname <- getwd()
 
-bdaPlt <- plotBxp_bdaIncidence(newDef2, "ILI", "ILI Reports per 10,000", "ILIn_2wkAvg_-30+3", pathname, 30)
-bdaPlt2 <- plotBxp_bdaIncidence(oldDef2, "ILIn", "ILI Reports per 10,000", "ILIn_1wk_-20+2", pathname, 30)
-bdaPlt3 <- plotBxp_bdaIncidence(newDef2, "IR", "ILI Incidence Ratio", "IR_2wkAvg_-30+3", pathname, 0.4)
-bdaPlt4 <- plotBxp_bdaIncidence(oldDef2, "IR", "ILI Incidence Ratio", "IR_1wk_-20+2", pathname, 0.4)
-# exported 8/25/16
+bdaPlt <- plotBxp_bdaIncidence(newDef2, "ILI", "ILI Reports per 10,000", "ILIn_2wkAvg_-30+3", pathname, 50)
+bdaPlt3 <- plotBxp_bdaIncidence(newDef2, "IR", "ILI Incidence Ratio", "IR_2wkAvg_-30+3", pathname, 0.5)
+if (code == ""){
+  bdaPlt2 <- plotBxp_bdaIncidence(oldDef2, "ILIn", "ILI Reports per 10,000", "ILIn_1wk_-20+2", pathname, 50)
+  bdaPlt4 <- plotBxp_bdaIncidence(oldDef2, "IR", "ILI Incidence Ratio", "IR_1wk_-20+2", pathname, 0.5)
+}
+
+# exported 8/29/16
 
