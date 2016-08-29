@@ -1,7 +1,7 @@
 
 ## Name: Elizabeth Lee
-## Date: 8/4/16
-## Function: Boxplot: distribution of time to peak across averaged metro IDs, total population
+## Date: 8/25/16
+## Function: Boxplot: BDA across averaged metro IDs, total population, averaged prevalence
 ## Filenames: Anne/Metapopulation_model/average_model_outputs
 ## Data Source: 
 ## Notes: 
@@ -52,7 +52,7 @@ processDat <- function(importDat){
     spread(period, infPer10K) %>%
     mutate(PRR_db = during/before, PRR_ab = after/before) %>% 
     mutate(combo = paste(intervention, timing, sep = "_")) %>% 
-    mutate(intervention = factor(intervention, levels = c("baseline", "travel", "contact", "holiday")))
+    mutate(intervention = factor(intervention, levels = c("baseline", "travel", "school closure", "holiday")))
 
   return(dummyDat3)
 }
@@ -70,7 +70,7 @@ plotBxp_totPRR <- function(dat, varname, varString, timingString, exportPath){
     geom_boxplot() + 
     ylab(varString) +
     theme_bw() +
-    theme(text=element_text(size=12), axis.title.x = element_blank(), legend.position = c(1,1), legend.justification = c(1,1), legend.title = element_blank())
+    theme(text=element_text(size=14), axis.title.x = element_blank(), legend.position = c(1,1), legend.justification = c(1,1), legend.title = element_blank())
   ggsave(exportFilename, exportPlot, units = "in", width = w, height = h, dpi = dp)
       
   return(exportPlot)
@@ -88,7 +88,7 @@ plotBxp_totBDA <- function(dat, varname, varString, timingString, exportPath){
     geom_boxplot(aes(colour = period)) + 
     ylab(varString) +
     theme_bw() +
-    theme(text=element_text(size=12), axis.title.x = element_blank(), legend.position = c(1,1), legend.justification = c(1,1), legend.title = element_blank())
+    theme(text=element_text(size=14), axis.title.x = element_blank(), legend.position = c(1,1), legend.justification = c(1,1), legend.title = element_blank())
   ggsave(exportFilename, exportPlot, units = "in", width = w, height = h, dpi = dp)
   
   return(exportPlot)
@@ -106,7 +106,7 @@ plotBxp_totBDA_holidays <- function(dat, varname, varString, timingString, expor
     geom_boxplot(aes(colour = period)) + 
     ylab(varString) +
     theme_bw() +
-    theme(text=element_text(size=12), axis.title.x = element_blank(), legend.position = c(1,1), legend.justification = c(1,1), legend.title = element_blank())
+    theme(text=element_text(size=14), axis.title.x = element_blank(), legend.position = c(1,1), legend.justification = c(1,1), legend.title = element_blank())
   ggsave(exportFilename, exportPlot, units = "in", width = w, height = h, dpi = dp)
   
   return(exportPlot)
@@ -125,7 +125,7 @@ plotBxp_totPRRSumm <- function(dat, varname, varString, exportFilename){
     geom_hline(yintercept = 1) +
     ylab(varString) +
     theme_bw() +
-    theme(text=element_text(size=12), axis.title.x = element_blank(), legend.position = c(1,1), legend.justification = c(1,1), legend.title = element_blank())
+    theme(text=element_text(size=14), axis.title.x = element_blank(), legend.position = c(1,1), legend.justification = c(1,1), legend.title = element_blank())
   ggsave(exportFilename, exportPlot, units = "in", width = w, height = h, dpi = dp)
   
   return(exportPlot)
@@ -164,7 +164,7 @@ summDat <- pltDat %>%
   mutate(intervention = as.character(intervention)) %>%
   filter(intervention == "baseline" | intervention == "holiday") %>%
   gather(period, PRR, PRR_db, PRR_ab) %>%
-  mutate(period = factor(period, levels = c("PRR_db", "PRR_ab"), labels = c("during/before", "after/before"))) %>%
+  mutate(period = factor(period, levels = c("IRR_db", "IRR_ab"), labels = c("during/before", "after/before"))) %>%
   mutate(timing = ifelse(timing == "plus six weeks", "+6", ifelse(timing == "plus three weeks", "+3", timing))) %>%
   mutate(combo = ifelse(timing == "actual", intervention, paste(intervention, timing))) %>%
   mutate(intervention = factor(intervention, levels = c("baseline", "holiday"))) %>%

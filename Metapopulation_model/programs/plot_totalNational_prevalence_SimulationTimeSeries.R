@@ -69,7 +69,7 @@ plotNatTS <- function(dat, holidayTiming, exportPath){
   
   exportPlot <- ggplot(dat2, aes(x = time_step, y = infPer10K)) +
     geom_line(aes(colour = intervention)) + 
-    geom_vline(xintercept = interventionTimes, colour = "black") +
+    geom_vline(xintercept = interventionTimes, colour = "black", linetype = 2) +
     scale_colour_brewer(name = "intervention", palette = "Set1") + 
     ylab("flu prevalence per 10,000") +
     scale_x_continuous("time step", limits = c(0,365)) +
