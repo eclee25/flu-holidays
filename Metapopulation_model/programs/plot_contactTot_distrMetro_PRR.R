@@ -51,7 +51,7 @@ processDat <- function(importDat){
   dummyDat3 <- dummyDat2 %>%
     spread(period, infPer10K) %>%
     mutate(PRR_db = during/before, PRR_ab = after/before) %>% 
-    mutate(intervention = factor(intervention, levels = c("baseline", "partial contact", "full contact")))
+    mutate(intervention = factor(intervention, levels = c("baseline", "partial school closure", "full school closure")))
 
   return(dummyDat3)
 }

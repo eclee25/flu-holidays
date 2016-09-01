@@ -40,7 +40,7 @@ importDat <- function(infileName){
   
   dummyDat <- read_csv(infileName, col_types = "iicd___")  %>%
     mutate(intervention = ifelse(!(codes$contact+codes$travel), "baseline", 
-                                 ifelse(codes$contact==1, "full contact", "partial contact")))  %>%
+                                 ifelse(codes$contact==1, "full school closure", "partial school closure")))  %>%
     mutate(timing = ifelse(codes$actual, "actual", NA))
 
   return(dummyDat)
@@ -62,7 +62,7 @@ plotNatTS_contact <- function(dat, holidayTiming, exportPath){
   
   exportPlot <- ggplot(dat2, aes(x = time_step, y = infPer10K)) +
     geom_line(aes(colour = intervention)) + 
-    geom_vline(xintercept = interventionTimes, colour = "black") +
+    geom_vline(xintercept = interventionTimes, colour = "black", linetype = 2) +
     scale_colour_brewer(name = "intervention", palette = "Set1") + 
     ylab("flu prevalence per 10,000") +
     scale_x_continuous("time step", limits = c(0,365)) +
@@ -111,7 +111,7 @@ path_export <- getwd()
 
 fullDat3 <- fullDat2 %>% 
   mutate(combo = paste(intervention, timing, sep = "_")) %>% 
-  mutate(intervention = factor(intervention, levels = c("baseline", "partial contact", "full contact")))
+  mutate(intervention = factor(intervention, levels = c("baseline", "partial school closure", "full school closure")))
 
 actualDat <- fullDat3 %>% filter(timing == "actual")
 

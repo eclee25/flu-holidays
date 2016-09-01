@@ -40,7 +40,7 @@ importDat <- function(infileName){
   
   dummyDat <- read_csv(infileName, col_types = "iicd___") %>%
     mutate(intervention = ifelse(!(codes$contact+codes$travel), "baseline", 
-                                        ifelse(codes$contact==1, "full contact", "partial contact")))  %>%
+                                        ifelse(codes$contact==1, "full school closure", "partial school closure")))  %>%
     mutate(timing = ifelse(codes$actual, "actual", NA))
   
   # spread to calculate total pop
@@ -75,7 +75,7 @@ plotBxp_tot_contact <- function(dat, holidayTiming, exportPath){
   
   exportPlot <- ggplot(dat2, aes(x = intervention, y = peak_time)) +
     geom_violin() + 
-    geom_hline(yintercept = interventionTimes, colour = "black") +
+    geom_hline(yintercept = interventionTimes, colour = "black", linetype = 2) +
     ylab("time steps to peak") +
     theme_bw() +
     theme(text=element_text(size=12), axis.title.x = element_blank(), legend.title = element_blank())
@@ -113,7 +113,7 @@ mergDat <- left_join(fullDat, popDat, by = c("metro_id")) %>%
 #### create plot data ####
 pltDat <- mergDat %>% 
   mutate(combo = paste(intervention, timing, sep = "_")) %>% 
-  mutate(intervention = factor(intervention, levels = c("baseline", "partial contact", "full contact"))) %>%
+  mutate(intervention = factor(intervention, levels = c("baseline", "partial school closure", "full school closure"))) %>%
   group_by(combo, metro_id) %>%
   filter(infPer10K == max(infPer10K)) %>%
   rename(peak_time = time_step)
