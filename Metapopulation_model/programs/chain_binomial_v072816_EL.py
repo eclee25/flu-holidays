@@ -11,7 +11,7 @@ import operator
 
 ### functions ###
 import population_parameters as pop_func
-import experiment_functions as exp_func
+import experiment_functions_EL as exp_func
 
 ### notes ###
 # 7/28/16: contact and travel intervention changed to both 2 weeks
@@ -1194,7 +1194,18 @@ def def_disease_exp_params (disease_intervention, travel_intervention, beta, C, 
     elif disease_intervention == 'red_C_all':
         C_red = exp_func.reduce_C_all(C)
         beta_exp = beta    
-    
+    # 8/11/16 reduce age-specific r
+    elif disease_intervention == 'red_C_ageROnly':
+    	C_red = exp_func.reduce_C_ageROnly(C)
+    	beta_exp = beta
+    # 9/1/16 reduce age-specific r
+    elif disease_intervention == 'red_C_ageROnly_less':
+        C_red = exp_func.reduce_C_ageROnly_less(C)
+        beta_exp = beta
+    # 9/1/16 reduce age-specific r
+    elif disease_intervention == 'red_C_ageROnly_more':
+        C_red = exp_func.reduce_C_ageROnly_more(C)
+        beta_exp = beta    	
     elif disease_intervention == 'red_beta':
         C_red = C
         beta_exp = (beta * 0.6666667)
@@ -1229,7 +1240,18 @@ def def_exp_params (disease_intervention, travel_intervention, beta, C, ch_trave
     elif disease_intervention == 'red_C_all':
         C_red = exp_func.reduce_C_all(C)
         beta_exp = beta    
-               
+    # 8/11/16 reduce age-specific r
+    elif disease_intervention == 'red_C_ageROnly':
+    	C_red = exp_func.reduce_C_ageROnly(C)
+    	beta_exp = beta
+    # 9/1/16 reduce age-specific r
+    elif disease_intervention == 'red_C_ageROnly_less':
+        C_red = exp_func.reduce_C_ageROnly_less(C)
+        beta_exp = beta
+    # 9/1/16 reduce age-specific r
+    elif disease_intervention == 'red_C_ageROnly_more':
+        C_red = exp_func.reduce_C_ageROnly_more(C)
+        beta_exp = beta               
     elif disease_intervention == 'red_beta':
         C_red = C
         beta_exp = (beta * 0.6666667)
@@ -1393,7 +1415,7 @@ if __name__ == "__main__":
     filename_metropop = '/home/anne/Dropbox/Anne_Bansal_lab/Python_Scripts/Modeling_Project/air_traffic_data/edgelists/metro_pop.csv'
     d_metropop, metro_ids = pop_func.import_csv_metropop(filename_metropop, 1, 2)
     sorted_metro_ids = sorted(metro_ids)
-    abrv_metro_ids = sorted_metro_ids
+    abrv_metro_ids = sorted_metro_ids # number of seeds
     #print abrv_metro_ids
     filename_air_network = '/home/anne/Dropbox/Anne_Bansal_lab/Python_Scripts/Modeling_Project/air_traffic_data/air_traffic_edgelist.txt'
     filename_baseline_air_network = '/home/anne/Dropbox/Anne_Bansal_lab/Python_Scripts/Modeling_Project/air_traffic_data/edgelists/baseline_flight_network_undirected.txt'
@@ -1456,7 +1478,10 @@ if __name__ == "__main__":
     manip_exp_params.append(experiment)
     #disease_intervention = 'red_C_cc'
     #disease_intervention = 'red_C_aa'
-    disease_intervention = 'red_C_all'
+    #disease_intervention = 'red_C_all'
+    # disease_intervention = 'red_C_ageROnly'
+    # disease_intervention = 'red_C_ageROnly_less' # 0.9 of partial school closure intervention
+    disease_intervention = 'red_C_ageROnly_more' # 1.1 of partial school closure intervention
     # disease_intervention = 'none'
     manip_exp_params.append(disease_intervention)
     travel_intervention = 'none'
@@ -1465,10 +1490,10 @@ if __name__ == "__main__":
     # travel_intervention = 'swap_networks'
     manip_exp_params.append(travel_intervention)
     
-    #timing = 'actual'
+    timing = 'actual'
     #timing = 'extreme'
     #timing = 'late_holiday_3wk'
-    timing = 'late_holiday_6wk'
+    #timing = 'late_holiday_6wk'
     #timing = 'late_holiday_9wk'
     model_peak = 191 # time steps
     data_peak = 140 # days - peak occurs about 20 weeks into epi in data
