@@ -1,7 +1,7 @@
 
 ## Name: Elizabeth Lee
 ## Date: 10/5/16
-## Function: national time series with contact interventions only
+## Function: Boxplot: distribution of time to peak across averaged metro IDs, total population. Include baseline, red_C_ageROnly and red_C_all. Supplement figure. Incidence.
 ## Filenames: Anne/Metapopulation_model/average_model_outputs
 ## Data Source: 
 ## Notes: 
@@ -38,36 +38,49 @@ importDat <- function(infileName){
   print(infileName)
   print(unlist(codes))
   
-  dummyDat <- read_csv(infileName, col_types = "iicd___")  %>%
+  dummyDat <- read_csv(infileName, col_types = "iicd___") %>%
     mutate(intervention = ifelse(!(codes$contact+codes$travel), "baseline", 
-                                 ifelse(codes$contact==1, "full school closure", "partial school closure")))  %>%
+                                        ifelse(codes$contact==1, "full school closure", "partial school closure")))  %>%
     mutate(timing = ifelse(codes$actual, "actual", NA))
-
-  return(dummyDat)
+  
+  # spread to calculate total pop
+  dummyDat2 <- dummyDat %>%
+    spread(age, newInfected) %>%
+    mutate(newInfected = A+C) %>%
+    select(-A,-C) 
+  
+  # filter out metros that were infected only when they were the seed (these are very short)
+  rmMetros <- dummyDat2 %>% 
+    group_by(metro_id) %>%
+    summarise(totInfected = sum(newInfected)) %>%
+    filter(totInfected==0) %>%
+    distinct(metro_id) %>%
+    unlist
+  dummyDat3 <- dummyDat2 %>%
+    filter(!(metro_id %in% rmMetros))
+  
+  return(dummyDat3)
 }
 ################################
-plotNatTS_contact <- function(dat, holidayTiming, exportPath){
+plotBxp_tot_contact <- function(dat, holidayTiming, exportPath){
   print(match.call())
-  # plot national time series, averaged
+  # plot national peak timing, distribution across peak time in average of all metro ids
   
   if (holidayTiming == 'actual'){
-    holidayStart <- 90
-    exportFilename <- paste0(exportPath, "/nationalContact_avg_actual_incidence.png")
+    holidayStart <- 90 
+    exportFilename <- paste0(exportPath, "/peaktime_incidence_contact_actual.png")
   } 
   interventionTimes <- c(holidayStart-7, holidayStart+7)
 
   dat2 <- dat %>%
-    mutate(time_step = time_step-epiStart) %>%
-    filter(time_step >= 0)
+    mutate(peak_time = peak_time-epiStart)
   
-  exportPlot <- ggplot(dat2, aes(x = time_step, y = infPer10K)) +
-    geom_line(aes(colour = intervention)) + 
-    geom_vline(xintercept = interventionTimes, colour = "black", linetype = 2) +
-    scale_colour_brewer(name = "intervention", palette = "Set1") + 
-    ylab("flu incidence per 10,000") +
-    scale_x_continuous("time step", limits = c(0,365)) +
+  exportPlot <- ggplot(dat2, aes(x = intervention, y = peak_time)) +
+    geom_violin() + 
+    geom_hline(yintercept = interventionTimes, colour = "black", linetype = 2) +
+    ylab("time steps to peak") +
     theme_bw() +
-    theme(axis.text=element_text(size=14), legend.position = c(1,1), legend.justification = c(1,1), legend.title = element_blank())
+    theme(text=element_text(size=14), axis.title.x = element_blank(), legend.title = element_blank())
   ggsave(exportFilename, exportPlot, units = "in", width = w, height = h, dpi = dp)
       
   return(exportPlot)
@@ -94,14 +107,18 @@ fullDat <- tbl_df(fullDat)
 setwd(dirname(sys.frame(1)$ofile)) # only works if you source the program
 setwd("../Model_Inputs")
 popDat <- read_csv("metro_pop.csv", col_type = "_dd", col_names = c("metro_id", "pop"), skip = 1)
-fullPop <- sum(popDat$pop)
 
-#### full data - national ####
-fullDat2 <- fullDat %>% 
-  group_by(intervention, timing, time_step) %>%
-  summarise(newInfected = sum(newInfected)) %>%
-  ungroup %>%
-  mutate(infPer10K = newInfected/fullPop*10000)
+#### total pop data by metro ID ####
+mergDat <- left_join(fullDat, popDat, by = c("metro_id")) %>%
+  mutate(infPer10K = newInfected/pop*10000) 
+
+#### create plot data ####
+pltDat <- mergDat %>% 
+  mutate(combo = paste(intervention, timing, sep = "_")) %>% 
+  mutate(intervention = factor(intervention, levels = c("baseline", "partial school closure", "full school closure"))) %>%
+  group_by(combo, metro_id) %>%
+  filter(infPer10K == max(infPer10K)) %>%
+  rename(peak_time = time_step)
 
 #### export plots ####
 setwd(dirname(sys.frame(1)$ofile)) # only works if you source the program
@@ -109,16 +126,10 @@ dir.create(sprintf('../plot_outputs'), showWarnings=FALSE)
 setwd("../plot_outputs")
 path_export <- getwd()
 
-fullDat3 <- fullDat2 %>% 
-  mutate(combo = paste(intervention, timing, sep = "_")) %>% 
-  mutate(intervention = factor(intervention, levels = c("baseline", "partial school closure", "full school closure")))
-
-actualDat <- fullDat3 %>% filter(timing == "actual")
-
-actualPlot <- plotNatTS_contact(actualDat, "actual", path_export)
+actualPlot <- plotBxp_tot_contact(pltDat, "actual", path_export)
 
 #### write to file ####
 setwd(dirname(sys.frame(1)$ofile)) # only works if you source the program
 setwd("../R_export")
-write_csv(fullDat2, "nationalContact_avg_allCombos_incidence.csv")
+write_csv(mergDat, "metroContactTot_avg_allCombos_incidence.csv")
 # 10/5/16
