@@ -50,7 +50,7 @@ setwd("./R_export")
 importDat <- read_csv("ILIn_peaktime.csv", col_types = "iDiiciidi")
 
 pltDat <- importDat %>%
-  mutate(season = factor(as.character(season), levels = c("2", "3", "4", "5", "6", "7", "8", "9"), labels = c("2001-02", "2002-03", "2003-04", "2004-05", "2005-06", "2006-07", "2007-08", "2008-09")))
+  mutate(season = factor(as.character(season), levels = c("2", "3", "4", "5", "6", "7", "8", "9"), labels = c("2001-02", "2002-03", "2003-04", "2004-05", "2005-06", "2006-07", "2007-08", "2008-09"))) 
 
 
 #### export plot ####################################
