@@ -18,6 +18,9 @@ require(dplyr); require(tidyr); require(ggplot2); require(readr)
 setwd(dirname(sys.frame(1)$ofile)) # only works if you source the program
 source("source_parseFilenames.R")
 
+#### set these! #################################
+suppOnly <- TRUE # average supplement outputs
+
 #### functions #################################
 
 ################################
@@ -68,10 +71,18 @@ exportAverageFile <- function(infilename, exportFile){
 }
 
 #### program ################################
-setwd('../final_model_outputs') # example with relative file paths
-path_infile <- getwd()
-outputfiles <- grep("output_", list.files(), value=TRUE)
+if (suppOnly){
+  setwd('../final_model_outputs/suppOnly') # example with relative file paths
+  path_infile <- getwd()
+  outputfiles <- grep("output_", list.files(), value=TRUE)
+} else{
+  setwd('../final_model_outputs') # example with relative file paths
+  path_infile <- getwd()
+  outputfiles <- grep("output_", list.files(), value=TRUE)
+}
 
+
+setwd(dirname(sys.frame(1)$ofile))
 dir.create(sprintf('../R_export'), showWarnings=FALSE) 
 setwd("../R_export")
 
