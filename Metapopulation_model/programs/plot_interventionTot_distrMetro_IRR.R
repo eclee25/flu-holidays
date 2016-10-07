@@ -21,7 +21,7 @@ source("source_parseFilenames.R") # functions: parseInfilename, parseOutfilename
 
 #### parameters #################################
 cProp <- 0.23952911899 # proportion of children in each metro ID population
-model_peak <- 190
+model_peak <- 191
 data_peak <- 140
 epiStart <- model_peak - data_peak
 
@@ -35,14 +35,14 @@ processDat <- function(importDat){
   # read a single data file, adding columns for each code
   
   holidayIndicDat <- data.frame(timing = c("actual", "plus three weeks", "plus six weeks"), 
-                                holidayStart = c(90 + epiStart, 111 + epiStart, 132 + epiStart),
+                                interventionStart = c(90 + epiStart -7, 111 + epiStart -7, 132 + epiStart -7),
                                 stringsAsFactors = FALSE)
   
   dummyDat <- left_join(importDat, holidayIndicDat, by = c("timing"))
 
   # indicate before, during, after timesteps
   dummyDat2 <- dummyDat %>%
-    mutate(period = ifelse((time_step >= holidayStart & time_step < holidayStart+14), "during", ifelse((time_step >= (holidayStart-21) & time_step < holidayStart+7), "before", ifelse((time_step >= (holidayStart+21) & time_step < (holidayStart+35)), "after", NA)))) %>%
+    mutate(period = ifelse((time_step >= interventionStart & time_step < interventionStart+14), "during", ifelse((time_step >= (interventionStart-21) & time_step < interventionStart+7), "before", ifelse((time_step >= (interventionStart+21) & time_step < (interventionStart+35)), "after", NA)))) %>%
     filter(!is.na(period)) %>%
     group_by(metro_id, intervention, timing, period) %>%
     summarise(infPer10K = mean(infPer10K)) %>%
@@ -209,5 +209,5 @@ setwd("../R_export")
 exportDat <- pltDat %>% select(-combo)
 
 write_csv(exportDat, "metroTot_avg_allCombos_bda_IRR.csv")
-# exported 8/25/16
+# exported 10/7/16
 
