@@ -121,8 +121,7 @@ mergDat <- left_join(fullDat, popDat, by = c("metro_id")) %>%
 #### create plot data ####
 pltDat <- mergDat %>% 
   mutate(combo = paste(intervention, timing, sep = "_")) %>% 
-  mutate(intervention = factor(intervention, levels = c("baseline", "travel", "school closure", "holiday"))) %>%
-  group_by(combo, metro_id) %>%
+  mutate(intervention = factor(intervention, levels = c("baseline", "travel", "school closure", "holiday"))) %>% group_by(combo, metro_id) %>%
   filter(infPer10K == max(infPer10K)) %>%
   rename(peak_time = time_step)
 
