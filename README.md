@@ -1,5 +1,4 @@
 # flu-holidays
-analyze the impact of winter holidays on influenza transmission
 
 [Contact, Travel, and Transmission: The Impact of Winter Holidays on Influenza Dynamics in the United States](https://doi.org/10.1093/infdis/jiw642)
 
